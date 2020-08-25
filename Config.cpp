@@ -36,8 +36,8 @@ namespace po=boost::program_options;
 
 namespace Bastet{
   const size_t HowManyHighScores=10;
-  const std::string RcFileName="/bastet/.bastetrc";
-  const std::string LocalHighScoresFileName="/bastet/.bastetscores";
+  const std::string RcFileName="/bastetrc";
+  const std::string LocalHighScoresFileName="/bastetscores";
   const std::string GlobalHighScoresFileName="/var/games/bastet.scores2";
 
   bool HighScores::Qualifies(int score){
