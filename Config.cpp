@@ -36,8 +36,8 @@ namespace po=boost::program_options;
 
 namespace Bastet{
   const size_t HowManyHighScores=10;
-  const std::string RcFileName="/.bastetrc";
-  const std::string LocalHighScoresFileName="/.bastetscores";
+  const std::string RcFileName="/bastet/.bastetrc";
+  const std::string LocalHighScoresFileName="/bastet/.bastetscores";
   const std::string GlobalHighScoresFileName="/var/games/bastet.scores2";
 
   bool HighScores::Qualifies(int score){
@@ -58,7 +58,7 @@ namespace Bastet{
   Config config; //singleton instance
 
   std::string Config::GetConfigFileName() const{
-    return string(getenv("HOME"))+RcFileName;
+    return string(getenv("XDG_CONFIG_HOME"))+RcFileName;
   }
 
   class CannotOpenFile{};
@@ -66,7 +66,7 @@ namespace Bastet{
   std::string Config::GetHighScoresFileName() const{
     static std::string result; //gets cached
     if(!result.empty()) return result;
-    
+
     //tries the global one first and sees if it's writable
     fstream ofs(GlobalHighScoresFileName.c_str());
     if(!ofs.fail()){
@@ -75,7 +75,7 @@ namespace Bastet{
     ofs.close();
 
     //falls back to the user-specific file
-    string s=string(getenv("HOME"))+LocalHighScoresFileName;
+    string s=string(getenv("XDG_CONFIG_HOME"))+LocalHighScoresFileName;
     if(result.empty()){
       cerr<<boost::str(boost::format("bastet: using a user-specific high scores file: %1%\nas the global high scores file %2% is not writable\n") % s % GlobalHighScoresFileName);
       fstream ofs2(s.c_str());
@@ -85,7 +85,7 @@ namespace Bastet{
       }
       ofs2.close();
     }
-    
+
     //tries to create the local high scores
     if(result.empty()){
       ofstream ofs3(s.c_str());
@@ -122,7 +122,7 @@ namespace Bastet{
 	  (str(score % difficulty % i).c_str(),po::value<int>()->default_value(0),"High score (points)")
 	  ;
       }
-    
+
     boost::program_options::variables_map _options;
     boost::program_options::variables_map _highScores;
 
@@ -140,7 +140,7 @@ namespace Bastet{
     string s=GetHighScoresFileName();
     ifstream ifs2(s.c_str());
     po::store(po::parse_config_file(ifs2,highScoresOpts),_highScores);
-    
+
     for(int difficulty=0;difficulty<num_difficulties;difficulty++){
       for(size_t i=0;i<HowManyHighScores;++i)
 	_hs[difficulty].push_back((HighScore){_highScores[str(score % difficulty % i)].as<int>(),
@@ -148,16 +148,16 @@ namespace Bastet{
     stable_sort(_hs[difficulty].begin(),_hs[difficulty].end()); //should not be needed but...
     }
   }
-  
+
   Keys *Config::GetKeys(){
     return &_keys;
   }
-  
+
   HighScores *Config::GetHighScores(int difficulty){
     assert(difficulty>=0 && difficulty<num_difficulties);
     return &(_hs[difficulty]);
   }
-  
+
   Config::~Config(){
     /**
        The config and highscore files are written down at each game, even if it is not needed, but who cares for now
