@@ -75,7 +75,7 @@ namespace Bastet{
     ofs.close();
 
     //falls back to the user-specific file
-    string s=string(getenv("XDG_CONFIG_HOME"))+LocalHighScoresFileName;
+    string s=string(getenv("XDG_DATA_HOME"))+LocalHighScoresFileName;
     if(result.empty()){
       cerr<<boost::str(boost::format("bastet: using a user-specific high scores file: %1%\nas the global high scores file %2% is not writable\n") % s % GlobalHighScoresFileName);
       fstream ofs2(s.c_str());
